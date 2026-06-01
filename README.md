@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Reach — Social Video RAG Analyst
 
 Full-stack RAG chatbot comparing **YouTube (Video A)** vs **Instagram Reels (Video B)**. Dynamically ingests transcripts + metadata, indexes into **ChromaDB**, and answers creator questions via **LangGraph retrieval + LangChain streaming chat** with citations and session memory.
@@ -128,3 +129,6 @@ This repo defaults to **lowest cost that still meets quality**: local BGE + Gemi
 ## License
 
 MIT
+=======
+# Reach
+>>>>>>> 71cdde01aade6a0d2b8ada5778dce663d85cebcc
