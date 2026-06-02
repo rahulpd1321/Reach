@@ -536,7 +536,6 @@ Suggested prompts are built into the chat panel UI.
 | Vercel  | `frontend`     | `https://xxx.vercel.app` ← **open this** |
 
 
-Full step-by-step: **[DEPLOY.md](./DEPLOY.md)**
 
 **Critical production env (Vercel):**
 
