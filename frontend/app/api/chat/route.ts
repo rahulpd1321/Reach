@@ -4,15 +4,15 @@
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const BACKEND =
-  process.env.BACKEND_URL?.replace(/\/$/, "") || "http://127.0.0.1:8000";
+import { getServerBackendUrl } from "@/lib/backend-url";
 
 export async function POST(req: Request) {
+  const backend = getServerBackendUrl();
   const body = await req.text();
 
   let upstream: Response;
   try {
-    upstream = await fetch(`${BACKEND}/api/chat`, {
+    upstream = await fetch(`${backend}/api/chat`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

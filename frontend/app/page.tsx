@@ -27,11 +27,23 @@ export default function Home() {
   const [apiStatus, setApiStatus] = useState<"checking" | "ok" | "offline" | "wrong">(
     "checking"
   );
+  const [healthInfo, setHealthInfo] = useState<string | null>(null);
+
+  const isLocal =
+    typeof window !== "undefined" &&
+    (window.location.hostname === "localhost" ||
+      window.location.hostname === "127.0.0.1");
 
   useEffect(() => {
     checkBackendHealth()
-      .then((h) => setApiStatus(isReachBackend(h) ? "ok" : "wrong"))
-      .catch(() => setApiStatus("offline"));
+      .then((h) => {
+        setHealthInfo(JSON.stringify(h));
+        setApiStatus(isReachBackend(h) ? "ok" : "wrong");
+      })
+      .catch((e) => {
+        setHealthInfo(e instanceof Error ? e.message : "unknown error");
+        setApiStatus("offline");
+      });
   }, []);
 
   async function handleIngest() {
@@ -89,9 +101,18 @@ export default function Home() {
           <div className="whitespace-pre-wrap">
             {apiStatus === "checking" && "Checking API connection…"}
             {apiStatus === "offline" &&
-              "Backend is not running. In a terminal:\ncd backend\n.venv\\Scripts\\uvicorn app.main:app --reload --port 8000\nThen restart npm run dev."}
+              (isLocal
+                ? "Reach backend is not running on port 8000.\n\n1. Stop whatever is using port 8000 (see README)\n2. cd backend\n3. .venv\\Scripts\\uvicorn app.main:app --reload --port 8000\n4. npm run dev"
+                : "Cannot reach your Railway API.\n\nVercel → Settings → Environment Variables:\n• BACKEND_URL = https://YOUR-APP.up.railway.app\n• NEXT_PUBLIC_BACKEND_URL = same URL\n\nThen Redeploy Vercel. Test Railway: YOUR-URL/health must show llm_provider.")}
             {apiStatus === "wrong" &&
-              "Port 8000 is in use by another app (not Reach). Stop it, then start Reach on port 8000."}
+              (isLocal
+                ? "Something on port 8000 is NOT the Reach API (health missing llm_provider).\n\nFix:\n1. PowerShell: Get-NetTCPConnection -LocalPort 8000 | Select OwningProcess\n2. Stop-Process -Id <PID> -Force\n3. Start Reach: cd backend → .venv\\Scripts\\uvicorn app.main:app --reload --port 8000"
+                : "Vercel is pointing at the wrong backend URL (not Reach).\n\nSet BOTH env vars to your Railway URL (not localhost:8000):\n• BACKEND_URL\n• NEXT_PUBLIC_BACKEND_URL\n\nOpen Railway-URL/health — must include \"llm_provider\": \"gemini\". Then Redeploy Vercel.")}
+            {healthInfo && apiStatus !== "ok" && apiStatus !== "checking" && (
+              <p className="mt-2 text-[10px] text-amber-400/70 font-mono break-all">
+                Debug: {healthInfo}
+              </p>
+            )}
           </div>
         </div>
       )}

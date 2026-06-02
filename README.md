@@ -52,6 +52,21 @@ npm run dev
 
 Open http://localhost:3000 — paste a **public YouTube URL** and **public Instagram Reel URL**, click **Ingest**, then chat.
 
+**"Port 8000 / wrong app" banner (local dev)**
+
+Another program is using port 8000, or the UI is hitting the wrong API. In PowerShell:
+
+```powershell
+Get-NetTCPConnection -LocalPort 8000 -ErrorAction SilentlyContinue | Select-Object OwningProcess -Unique
+Stop-Process -Id <PID> -Force
+cd d:\Reach\backend
+.\.venv\Scripts\uvicorn app.main:app --reload --port 8000
+```
+
+Confirm: http://127.0.0.1:8000/health must show `"llm_provider": "gemini"`.
+
+**On Vercel (deployed):** ignore port 8000 — set `BACKEND_URL` and `NEXT_PUBLIC_BACKEND_URL` to your **Railway** URL and redeploy.
+
 **Troubleshooting "Failed to fetch"**
 
 1. Start the **Reach** backend on port **8000** (another app on that port breaks ingest).

@@ -1,19 +1,25 @@
 /**
- * Browser: same-origin `/api/*` (proxied to FastAPI via next.config rewrites).
- * Chat: `/api/chat` uses a dedicated streaming route handler.
+ * API client: uses NEXT_PUBLIC_BACKEND_URL in production when set,
+ * otherwise same-origin proxies (/backend-health, /api/*).
  */
-function resolveApiBase(): string {
-  if (typeof window !== "undefined") {
-    return "";
-  }
-  return (
-    process.env.BACKEND_URL ||
-    process.env.NEXT_PUBLIC_API_URL ||
-    "http://127.0.0.1:8000"
-  ).replace(/\/$/, "");
+import { getPublicBackendUrl } from "./backend-url";
+
+function healthUrl(): string {
+  const direct = getPublicBackendUrl();
+  return direct ? `${direct}/health` : "/backend-health";
 }
 
-const API_BASE = resolveApiBase();
+function ingestUrl(): string {
+  const direct = getPublicBackendUrl();
+  return direct ? `${direct}/api/ingest` : "/api/ingest";
+}
+
+function sessionUrl(sessionId: string): string {
+  const direct = getPublicBackendUrl();
+  return direct
+    ? `${direct}/api/session/${sessionId}`
+    : `/api/session/${sessionId}`;
+}
 
 export interface VideoMetadata {
   video_id: string;
@@ -57,14 +63,34 @@ export interface BackendHealth {
   llm_provider?: string;
   llm_model?: string;
   llm_ready?: boolean;
+  detail?: string;
+  backend?: string;
+}
+
+function isLocalDev(): boolean {
+  if (typeof window === "undefined") return false;
+  return (
+    window.location.hostname === "localhost" ||
+    window.location.hostname === "127.0.0.1"
+  );
 }
 
 function networkErrorMessage(): string {
+  if (isLocalDev()) {
+    return (
+      "Cannot reach the Reach API locally. Start the backend:\n" +
+      "cd backend\n" +
+      ".venv\\Scripts\\uvicorn app.main:app --reload --port 8000\n" +
+      "Then: npm run dev"
+    );
+  }
   return (
-    "Cannot reach the Reach API. Start the backend in a separate terminal:\n" +
-    "cd backend\n" +
-    ".\\.venv\\Scripts\\uvicorn app.main:app --reload --port 8000\n\n" +
-    "Then restart the frontend (npm run dev) so the proxy picks it up."
+    "Cannot reach your deployed API.\n\n" +
+    "On Vercel → Settings → Environment Variables, set:\n" +
+    "• BACKEND_URL = your Railway URL (e.g. https://xxx.up.railway.app)\n" +
+    "• NEXT_PUBLIC_BACKEND_URL = same Railway URL\n\n" +
+    "On Railway → FRONTEND_ORIGIN = your Vercel URL\n\n" +
+    "Then Redeploy Vercel (required after env changes)."
   );
 }
 
@@ -78,10 +104,11 @@ function wrapFetchError(err: unknown): Error {
 
 export async function checkBackendHealth(): Promise<BackendHealth> {
   try {
-    const res = await fetch(
-      typeof window !== "undefined" ? "/backend-health" : `${API_BASE}/health`
-    );
-    if (!res.ok) throw new Error(`Health check failed (${res.status})`);
+    const res = await fetch(healthUrl(), { cache: "no-store" });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || `Health check failed (${res.status})`);
+    }
     return res.json();
   } catch (e) {
     throw wrapFetchError(e);
@@ -97,7 +124,7 @@ export async function ingestVideos(
   instagramUrl: string
 ): Promise<IngestResponse> {
   try {
-    const res = await fetch(`${API_BASE}/api/ingest`, {
+    const res = await fetch(ingestUrl(), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -122,7 +149,7 @@ export async function ingestVideos(
 
 export async function getSession(sessionId: string) {
   try {
-    const res = await fetch(`${API_BASE}/api/session/${sessionId}`);
+    const res = await fetch(sessionUrl(sessionId));
     if (!res.ok) throw new Error("Session not found");
     return res.json();
   } catch (e) {

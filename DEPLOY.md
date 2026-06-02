@@ -63,8 +63,11 @@ docker compose -f docker-compose.prod.yml up -d --build
 | Name | Value |
 |------|--------|
 | `BACKEND_URL` | `https://reach-api-production.up.railway.app` (no trailing slash) |
+| `NEXT_PUBLIC_BACKEND_URL` | **Same Railway URL** (required for health check + ingest) |
 
-4. Deploy.
+4. **Redeploy** after saving env vars (Vercel bakes rewrites at build time; these vars fix that).
+
+5. Deploy.
 5. Copy your Vercel URL, e.g. `https://reach-xyz.vercel.app`.
 
 ---
@@ -97,8 +100,9 @@ GEMINI_MODEL=gemini-2.5-flash-lite
 CHROMA_PERSIST_DIR=/app/data/chroma
 FRONTEND_ORIGIN=https://your-frontend.vercel.app
 
-# frontend (Vercel)
+# frontend (Vercel) — both required
 BACKEND_URL=https://your-backend.up.railway.app
+NEXT_PUBLIC_BACKEND_URL=https://your-backend.up.railway.app
 ```
 
 ---
