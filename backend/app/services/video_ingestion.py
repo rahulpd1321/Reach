@@ -25,8 +25,13 @@ def _ytdlp_base_args() -> list[str]:
             browser = get_settings().ytdlp_cookies_browser.strip()
         except Exception:
             pass
-    if browser:
+    # Browser cookies only work on a dev machine with that browser installed (not Railway Docker)
+    if browser and not os.getenv("RAILWAY_ENVIRONMENT") and not os.path.exists("/.dockerenv"):
         args.extend(["--cookies-from-browser", browser])
+    elif browser and (os.getenv("RAILWAY_ENVIRONMENT") or os.path.exists("/.dockerenv")):
+        logger.warning(
+            "YTDLP_COOKIES_BROWSER ignored in container/Railway; use public Instagram URLs"
+        )
     return args
 
 from youtube_transcript_api import YouTubeTranscriptApi

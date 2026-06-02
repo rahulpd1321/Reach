@@ -21,6 +21,12 @@ function sessionUrl(sessionId: string): string {
     : `/api/session/${sessionId}`;
 }
 
+function chatUrl(): string {
+  const direct = getPublicBackendUrl();
+  // Direct to Railway avoids Vercel serverless timeout on long SSE streams
+  return direct ? `${direct}/api/chat` : "/api/chat";
+}
+
 export interface VideoMetadata {
   video_id: string;
   platform: string;
@@ -186,7 +192,7 @@ export async function streamChat(
   onEvent: (event: StreamEvent) => void
 ): Promise<void> {
   try {
-    const res = await fetch("/api/chat", {
+    const res = await fetch(chatUrl(), {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

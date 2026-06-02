@@ -108,7 +108,7 @@ export default function Home() {
               (isLocal
                 ? "Something on port 8000 is NOT the Reach API (health missing llm_provider).\n\nFix:\n1. PowerShell: Get-NetTCPConnection -LocalPort 8000 | Select OwningProcess\n2. Stop-Process -Id <PID> -Force\n3. Start Reach: cd backend → .venv\\Scripts\\uvicorn app.main:app --reload --port 8000"
                 : "Vercel is pointing at the wrong backend URL (not Reach).\n\nSet BOTH env vars to your Railway URL (not localhost:8000):\n• BACKEND_URL\n• NEXT_PUBLIC_BACKEND_URL\n\nOpen Railway-URL/health — must include \"llm_provider\": \"gemini\". Then Redeploy Vercel.")}
-            {healthInfo && apiStatus !== "ok" && apiStatus !== "checking" && (
+            {healthInfo && apiStatus !== "checking" && (
               <p className="mt-2 text-[10px] text-amber-400/70 font-mono break-all">
                 Debug: {healthInfo}
               </p>

@@ -3,5 +3,9 @@
   "framework": "nextjs",
   "installCommand": "npm install",
   "buildCommand": "npm run build",
-  "regions": ["iad1"]
+  "regions": ["iad1"],
+  "functions": {
+    "app/api/ingest/route.ts": { "maxDuration": 300 },
+    "app/api/chat/route.ts": { "maxDuration": 300 }
+  }
 }

@@ -3,6 +3,8 @@
  */
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+/** Pro plan allows 300; Hobby caps at 10s — prefer NEXT_PUBLIC_BACKEND_URL for direct chat */
+export const maxDuration = 300;
 
 import { getServerBackendUrl } from "@/lib/backend-url";
 
