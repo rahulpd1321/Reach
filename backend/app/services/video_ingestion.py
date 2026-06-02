@@ -101,13 +101,19 @@ def normalize_youtube_url(url: str) -> str:
 def _fetch_youtube_transcript_api(video_id: str) -> str | None:
     try:
         transcript = YouTubeTranscriptApi().fetch(video_id)
+
         return " ".join(
             snippet.text.strip()
             for snippet in transcript.snippets
             if getattr(snippet, "text", None)
         )
-    except (NoTranscriptFound, TranscriptsDisabled, VideoUnavailable) as e:
-        logger.info("youtube-transcript-api: %s", e)
+
+    except Exception as e:
+        logger.warning(
+            "youtube-transcript-api failed for %s: %s",
+            video_id,
+            str(e)
+        )
         return None
 
 
@@ -182,8 +188,20 @@ def _platform_from_url(url: str) -> str:
 
 def fetch_video_data(url: str, video_id: str) -> dict[str, Any]:
     """Return normalized metadata + full transcript for one video."""
-    info = _run_ytdlp(url)
+
     platform = _platform_from_url(url)
+
+    try:
+        info = _run_ytdlp(url)
+    except Exception as e:
+        logger.warning("yt-dlp metadata failed: %s", str(e))
+
+        info = {
+            "id": extract_youtube_id(url),
+            "title": "Unknown",
+            "description": "",
+            "tags": [],
+        }
 
     views = _safe_int(info.get("view_count"))
     likes = _safe_int(info.get("like_count"))
