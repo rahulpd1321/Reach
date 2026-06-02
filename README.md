@@ -1,4 +1,3 @@
-# website url - (https://reach-five-rho.vercel.app/)
 # Reach — Social Video RAG Analyst
 
 > Full-stack RAG chatbot that compares **YouTube (Video A)** vs **Instagram Reels (Video B)** using live transcripts, engagement metrics, vector search, and streaming AI answers with citations and conversation memory.
@@ -537,6 +536,7 @@ Suggested prompts are built into the chat panel UI.
 | Vercel  | `frontend`     | `https://xxx.vercel.app` ← **open this** |
 
 
+Full step-by-step: **[DEPLOY.md](./DEPLOY.md)**
 
 **Critical production env (Vercel):**
 
@@ -562,6 +562,7 @@ CHROMA_PERSIST_DIR=/app/data/chroma
 | ------------------------------------ | ------------------------------------ | ------------------------------------------------------------- |
 | "Backend is not running" / port 8000 | Wrong API URL or local port conflict | Set `NEXT_PUBLIC_BACKEND_URL`; free port 8000 locally         |
 | Health OK but no `llm_provider`      | Wrong app on port 8000               | Start Reach backend; check Railway root = `backend`           |
+| YouTube "Sign in to confirm you're not a bot" | YouTube bot check | `YTDLP_COOKIES_BROWSER=chrome` in `backend/.env`, restart backend |
 | Ingest fails Instagram               | Private reel / login required        | Use public URL; `YTDLP_COOKIES_BROWSER=chrome` **local only** |
 | Gemini quota error                   | Model limit exhausted                | Use `gemini-2.5-flash-lite`; wait; or add `OPENAI_API_KEY`    |
 | Chat stuck on "Retrieving chunks"    | LLM/stream/CORS issue                | Set `NEXT_PUBLIC_BACKEND_URL`; check Railway logs             |

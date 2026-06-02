@@ -31,8 +31,10 @@ class Settings(BaseSettings):
     chunk_size: int = 500
     chunk_overlap: int = 80
     retrieval_k: int = 6
-    # e.g. chrome, firefox — helps Instagram when login is required
+    # Local: chrome, edge, firefox — logged-in YouTube/Instagram
     ytdlp_cookies_browser: str = ""
+    # Path to Netscape cookies.txt (works on Railway if file is mounted)
+    ytdlp_cookies_file: str = ""
 
 
 @lru_cache
