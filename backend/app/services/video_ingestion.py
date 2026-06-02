@@ -49,16 +49,25 @@ YOUTUBE_ID_RE = re.compile(
 
 
 def _run_ytdlp(url: str, extra_args: list[str] | None = None) -> dict[str, Any]:
+
+    url = normalize_youtube_url(url)
+
     args = [
         *YTDLP_CMD,
         *_ytdlp_base_args(),
+        "--extractor-args",
+        "youtube:player_client=android,web",
         "--dump-single-json",
         "--no-download",
         "--no-warnings",
         url,
     ]
+
     if extra_args:
-        args = extra_args + args
+        args = args[:-1] + extra_args + [args[-1]]
+
+    logger.info("Running yt-dlp command: %s", " ".join(args))
+
     result = subprocess.run(
         args,
         capture_output=True,
@@ -66,16 +75,27 @@ def _run_ytdlp(url: str, extra_args: list[str] | None = None) -> dict[str, Any]:
         timeout=120,
         check=False,
     )
+
     if result.returncode != 0:
         raise RuntimeError(
             f"yt-dlp failed for {url}: {result.stderr or result.stdout}"
         )
+
     return json.loads(result.stdout)
 
 
 def extract_youtube_id(url: str) -> str | None:
     m = YOUTUBE_ID_RE.search(url)
     return m.group(1) if m else None
+
+def normalize_youtube_url(url: str) -> str:
+    match = re.search(r"/shorts/([A-Za-z0-9_-]+)", url)
+
+    if match:
+        video_id = match.group(1)
+        return f"https://www.youtube.com/watch?v={video_id}"
+
+    return url
 
 
 def _fetch_youtube_transcript_api(video_id: str) -> str | None:
