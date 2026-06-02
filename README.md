@@ -1,4 +1,4 @@
-website url -(#https://reach-five-rho.vercel.app/)
+# website url - (https://reach-five-rho.vercel.app/)
 # Reach — Social Video RAG Analyst
 
 > Full-stack RAG chatbot that compares **YouTube (Video A)** vs **Instagram Reels (Video B)** using live transcripts, engagement metrics, vector search, and streaming AI answers with citations and conversation memory.
